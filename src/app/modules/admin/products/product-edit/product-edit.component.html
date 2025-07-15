@@ -1,0 +1,425 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">Editar Producto</h1>
+      <p class="text-base-content/70">Actualiza la información del producto</p>
+    </div>
+
+    <div class="flex gap-3 mt-4 sm:mt-0">
+      <button
+        type="button"
+        class="btn btn-outline"
+        (click)="cancelEdit()"
+      >
+        <lucide-angular [img]="ArrowLeftIcon" class="w-4 h-4 mr-2"></lucide-angular>
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="savingProduct() || loadingProduct()"
+        (click)="saveChanges()"
+      >
+        @if (savingProduct()) {
+          <span class="loading loading-spinner loading-xs mr-2"></span>
+        } @else {
+          <lucide-angular [img]="SaveIcon" class="w-4 h-4 mr-2"></lucide-angular>
+        }
+        Guardar cambios
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Message
+  @if (successMessage()) {
+    <div class="alert alert-success mb-6">
+      <span>{{ successMessage() }}</span>
+    </div>
+  } -->
+
+  <!-- Loading State -->
+  @if (loadingProduct()) {
+    <div class="w-full flex justify-center my-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (loadingError()) {
+    <div class="alert alert-error mb-6">
+      <lucide-angular [img]="AlertTriangleIcon" class="w-5 h-5"></lucide-angular>
+      <span>{{ loadingError() }}</span>
+      <button class="btn btn-sm" routerLink="/admin/products">Volver a la lista</button>
+    </div>
+  }
+
+<!-- Form Error Message
+@if (errorMessage()) {
+  <div class="alert alert-error mb-6">
+    <span>{{ errorMessage() }}</span>
+  </div>
+} -->
+
+  @if (!loadingProduct() && !loadingError()) {
+    <form [formGroup]="productForm">
+      <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Left column - Main content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Basic Information -->
+          <div class="card bg-base-100 shadow" formGroupName="basicInfo">
+            <div class="card-body">
+              <h2 class="card-title">Información básica</h2>
+              <p class="text-sm text-muted-foreground">Información principal del producto</p>
+
+              <div class="divider"></div>
+
+              <div class="space-y-4">
+                <div class="form-control w-full">
+                  <label class="label">
+                    <span class="label-text">Nombre del producto</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Laptop Pro X"
+                    class="input input-bordered w-full"
+                    formControlName="name"
+                    [ngClass]="{'input-error': productForm.get('basicInfo.name')?.invalid && productForm.get('basicInfo.name')?.touched}"
+                  />
+                  @if (productForm.get('basicInfo.name')?.invalid && productForm.get('basicInfo.name')?.touched) {
+                    <label class="label">
+                      <span class="label-text-alt text-error">El nombre del producto es obligatorio</span>
+                    </label>
+                  }
+                </div>
+
+                <div class="form-control w-full flex flex-col">
+                  <label class="label">
+                    <span class="label-text">Descripción</span>
+                  </label>
+                  <textarea
+                    class="textarea textarea-bordered h-24 w-full"
+                    placeholder="Describe el producto detalladamente..."
+                    formControlName="description"
+                    [ngClass]="{'textarea-error': productForm.get('basicInfo.description')?.invalid && productForm.get('basicInfo.description')?.touched}"
+                  ></textarea>
+                  @if (productForm.get('basicInfo.description')?.invalid && productForm.get('basicInfo.description')?.touched) {
+                    <label class="label">
+                      <span class="label-text-alt text-error">La descripción es obligatoria</span>
+                    </label>
+                  }
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="form-control w-full">
+                    <label class="label">
+                      <span class="label-text">Categoría</span>
+                    </label>
+                    <select
+                      class="select select-bordered"
+                      formControlName="category"
+                      [ngClass]="{'select-error': productForm.get('basicInfo.category')?.invalid && productForm.get('basicInfo.category')?.touched}"
+                    >
+                      <option value="" disabled>Selecciona una categoría</option>
+                      @for (category of categories(); track category.id) {
+                        <option [value]="category.id">{{ category.name }}</option>
+                      }
+                    </select>
+                    @if (productForm.get('basicInfo.category')?.invalid && productForm.get('basicInfo.category')?.touched) {
+                      <label class="label">
+                        <span class="label-text-alt text-error">La categoría es obligatoria</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Images -->
+          <div class="card bg-base-100 shadow">
+            <div class="card-body">
+              <h2 class="card-title">Imágenes</h2>
+              <p class="text-sm text-muted-foreground">Añade imágenes del producto (máximo 5)</p>
+
+              <div class="divider"></div>
+
+              <div class="grid gap-4 mb-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                @for (image of productImages(); track image.id) {
+                  @if (!image.toDelete) {
+                    <div class="relative group">
+                      <img
+                        [src]="image.url"
+                        alt="Imagen del producto"
+                        class="object-cover w-full h-40 rounded-md border"
+                      />
+                      <!-- Botones para acciones en imágenes -->
+                      <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <!-- Botón para actualizar imagen (solo si no es una imagen nueva) -->
+                        @if (!image.isNew) {
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm btn-square"
+                            (click)="updateImage($index)"
+                            [disabled]="image.isUpdating"
+                          >
+                            @if (image.isUpdating) {
+                              <span class="loading loading-spinner loading-xs"></span>
+                            } @else {
+                              <lucide-angular [img]="UploadIcon" class="w-4 h-4"></lucide-angular>
+                            }
+                          </button>
+                        }
+                        <!-- Botón para eliminar imagen -->
+                        <button
+                          type="button"
+                          class="btn btn-error btn-sm btn-square"
+                          (click)="removeImage($index)"
+                        >
+                          <lucide-angular [img]="Trash2Icon" class="w-4 h-4"></lucide-angular>
+                        </button>
+                      </div>
+                      <!-- Indicador de imagen nueva -->
+                      @if (image.isNew) {
+                        <span class="absolute bottom-2 left-2 badge badge-info">Nueva</span>
+                      }
+                      <!-- Indicador de actualización en proceso -->
+                      @if (image.isUpdating) {
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span class="loading loading-spinner loading-md text-primary"></span>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <!-- Resto del código para imágenes marcadas para eliminar permanece igual -->
+                    <div class="relative group border-2 border-dashed border-error rounded-md">
+                      <div class="absolute inset-0 bg-error/10 flex flex-col items-center justify-center">
+                        <p class="text-sm text-error">Será eliminada</p>
+                        <button
+                          type="button"
+                          class="btn btn-sm mt-2"
+                          (click)="undoRemoveImage($index)"
+                        >
+                          Restaurar
+                        </button>
+                      </div>
+                      <img
+                        [src]="image.url"
+                        alt="Imagen del producto a eliminar"
+                        class="object-cover w-full h-40 rounded-md opacity-30"
+                      />
+                    </div>
+                  }
+                }
+
+                @if (canAddMoreImages()) {
+                  <button
+                    type="button"
+                    class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-md hover:bg-base-200 transition-colors"
+                    (click)="addImage()"
+                  >
+                    <lucide-angular [img]="ImagePlusIcon" class="w-8 h-8 mb-2 text-gray-400"></lucide-angular>
+                    <span class="text-sm text-muted-foreground">Añadir imagen</span>
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Prices and Stock -->
+          <div class="card bg-base-100 shadow">
+            <div class="card-body">
+              <h2 class="card-title">Precios y stock</h2>
+              <p class="text-sm text-muted-foreground">Configura los precios y el inventario del producto</p>
+
+              <div class="divider"></div>
+
+              <div role="tablist" class="tabs tabs-boxed mb-6">
+                <a
+                  role="tab"
+                  class="tab"
+                  [class.tab-active]="currentTab() === 'pricing'"
+                  (click)="setTab('pricing')"
+                >Precios</a>
+                <a
+                  role="tab"
+                  class="tab"
+                  [class.tab-active]="currentTab() === 'inventory'"
+                  (click)="setTab('inventory')"
+                >Inventario</a>
+              </div>
+
+              <!-- Pricing Tab -->
+              <div [hidden]="currentTab() !== 'pricing'" formGroupName="pricing">
+                <div class="space-y-4">
+                  <div class="grid gap-4 md:grid-cols-2">
+                    <div class="form-control w-full">
+                      <label class="label">
+                        <span class="label-text">Precio regular</span>
+                      </label>
+                      <div class="relative">
+                        <span class="absolute left-3 top-3 text-gray-500">$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          class="input input-bordered w-full pl-7"
+                          formControlName="regularPrice"
+                          [ngClass]="{'input-error': productForm.get('pricing.regularPrice')?.invalid && productForm.get('pricing.regularPrice')?.touched}"
+                        />
+                      </div>
+                      @if (productForm.get('pricing.regularPrice')?.invalid && productForm.get('pricing.regularPrice')?.touched) {
+                        <label class="label">
+                          <span class="label-text-alt text-error">El precio es obligatorio y debe ser mayor o igual a 0</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inventory Tab -->
+              <div [hidden]="currentTab() !== 'inventory'" formGroupName="inventory">
+                <div class="space-y-4">
+                  <div class="grid gap-4 md:grid-cols-2">
+                    <div class="form-control w-full">
+                      <label class="label">
+                        <span class="label-text">Cantidad en stock</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        class="input input-bordered w-full"
+                        formControlName="stock"
+                        [ngClass]="{'input-error': productForm.get('inventory.stock')?.invalid && productForm.get('inventory.stock')?.touched}"
+                      />
+                      @if (productForm.get('inventory.stock')?.invalid && productForm.get('inventory.stock')?.touched) {
+                        <label class="label">
+                          <span class="label-text-alt text-error">La cantidad debe ser mayor o igual a 0</span>
+                        </label>
+                      }
+                    </div>
+
+                    <div class="form-control w-full">
+                      <label class="label">
+                        <span class="label-text">Alerta de stock bajo</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="5"
+                        class="input input-bordered w-full"
+                        formControlName="lowStockAlert"
+                        [ngClass]="{'input-error': productForm.get('inventory.lowStockAlert')?.invalid && productForm.get('inventory.lowStockAlert')?.touched}"
+                      />
+                      @if (productForm.get('inventory.lowStockAlert')?.invalid && productForm.get('inventory.lowStockAlert')?.touched) {
+                        <label class="label">
+                          <span class="label-text-alt text-error">La cantidad debe ser mayor o igual a 0</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="form-control">
+                    <div class="flex items-center justify-between">
+                      <label class="label">
+                        <span class="label-text">Gestionar inventario</span>
+                      </label>
+                      <input
+                        type="checkbox"
+                        class="toggle toggle-primary"
+                        [checked]="isManageStock()"
+                        (click)="toggleManageStock()"
+                      />
+                    </div>
+                    <p class="text-sm text-muted-foreground">
+                      Habilita esta opción para gestionar el inventario del producto
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column - Sidebar -->
+        <div class="space-y-6">
+          <!-- Status and Visibility -->
+          <div class="card bg-base-100 shadow" formGroupName="status">
+            <div class="card-body">
+              <h2 class="card-title">Estado y visibilidad</h2>
+
+              <div class="divider"></div>
+
+              <div class="space-y-4">
+                <div class="form-control w-full flex flex-col">
+                  <label class="label">
+                    <span class="label-text">Estado</span>
+                  </label>
+                  <select class="select select-bordered" formControlName="status">
+                    @for (status of productStatuses; track status.id) {
+                      <option [value]="status.id">{{ status.name }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-control">
+                  <div class="flex items-center justify-between">
+                    <label class="label">
+                      <span class="label-text">Visibilidad en catálogo</span>
+                    </label>
+                    <input
+                      type="checkbox"
+                      class="toggle toggle-primary"
+                      [checked]="isVisible()"
+                      (click)="toggleVisibility()"
+                    />
+                  </div>
+                  <p class="text-sm text-muted-foreground">
+                    Habilita esta opción para mostrar el producto en el catálogo
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Meta -->
+          <div class="card bg-base-100 shadow">
+            <div class="card-body">
+              <h2 class="card-title">Información adicional</h2>
+              <div class="divider"></div>
+
+              <div class="space-y-4">
+                <div class="text-sm">
+                  <p><span class="font-semibold">ID:</span> {{ productDetail()?.id }}</p>
+                  <p><span class="font-semibold">Fecha de creación:</span> {{ productDetail()?.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                </div>
+
+                @if (productDetail()?.category) {
+                  <div class="mt-4 flex flex-col gap-3.5">
+                    <span class="font-semibold">Categoría:</span>
+                    <br>
+                    <div class="badge badge-outline mt-1">{{ productDetail()!.category.name }}</div>
+                  </div>
+                }
+
+                <div class="mt-4">
+                  <span class="font-semibold">Imágenes:</span>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    <div class="badge badge-outline">{{ getActiveImagesCount() }} activas</div>
+                    <div class="badge badge-outline badge-warning">{{ getNewImagesCount() }} nuevas</div>
+                    <div class="badge badge-outline badge-error">{{ getDeletedImagesCount() }} para eliminar</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  }
+</div>

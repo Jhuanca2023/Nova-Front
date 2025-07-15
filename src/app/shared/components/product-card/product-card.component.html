@@ -1,0 +1,85 @@
+<div
+  class="card h-full hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col dark:bg-base-200 dark:border dark:border-base-300"
+>
+  <figure class="overflow-hidden relative" style="height: 200px">
+    <a [routerLink]="['/products', product()!.id]">
+      <img
+        [src]="product()!.imageUrl"
+        [alt]="product()!.name"
+        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+      />
+    </a>
+    <div class="badge badge-primary absolute top-2 right-2 font-medium text-xs">
+      {{ product()!.categoryName }}
+    </div>
+
+    <!-- Botón de favorito -->
+    <button
+      (click)="toggleFavorite($event)"
+      [disabled]="isTogglingFavorite()"
+      class="absolute top-2 left-2 btn btn-circle btn-sm bg-base-100 hover:bg-base-100 border-none shadow-md"
+    >
+      @if (isTogglingFavorite()) {
+        <span class="loading loading-spinner loading-xs text-primary"></span>
+      } @else {
+        <lucide-angular
+          name="heart"
+          class="w-5 h-5 transition-all"
+          [class.text-error]="isFavorite()"
+          [class.fill-error]="isFavorite()"
+        ></lucide-angular>
+      }
+    </button>
+  </figure>
+
+  <div class="card-body p-4 flex flex-col flex-grow dark:text-base-content">
+    <a
+      [routerLink]="['/products', product()!.id]"
+      class="hover:text-primary transition-colors"
+    >
+      <h3 class="card-title text-lg line-clamp-2 h-12">{{ product()!.name }}</h3>
+    </a>
+
+    <div class="flex items-center justify-between mt-1 mb-2">
+      <div class="flex items-center">
+        <lucide-angular
+          name="star"
+          class="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400"
+        >
+        </lucide-angular>
+        <span class="text-sm opacity-75">{{
+            product()!.punctuation || "N/A"
+          }}</span>
+      </div>
+      @if (product()!.categoryName) {
+        <div class="badge badge-outline badge-sm">
+          {{ product()!.categoryName }}
+        </div>
+      }
+    </div>
+
+    <div class="flex-grow"></div>
+
+    <p class="text-xl font-bold text-primary">
+      S/{{ formatPrice(product()!.price) }}
+    </p>
+
+    <div class="card-actions justify-end mt-3">
+      <button
+        class="btn btn-primary btn-sm w-full group hover:shadow-md transition-all"
+        (click)="addToCart()"
+        [disabled]="isAddingToCart()"
+      >
+        @if (isAddingToCart()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <lucide-angular
+            name="shopping-cart"
+            class="w-4 h-4 mr-2 group-hover:animate-bounce"
+          ></lucide-angular>
+        }
+        Añadir al carrito
+      </button>
+    </div>
+  </div>
+</div>

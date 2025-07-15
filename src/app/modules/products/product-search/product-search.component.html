@@ -1,0 +1,21 @@
+<div class="relative">
+  <lucide-angular name="search" class="absolute w-5 h-5 text-gray-400 left-3 top-1/2 -translate-y-1/2"></lucide-angular>
+
+  <input
+    type="text"
+    [placeholder]="placeholder"
+    class="input input-bordered pl-10 w-full pr-10"
+    [(ngModel)]="queryValue"
+    (ngModelChange)="onQueryChange()"
+  />
+
+  @if (queryValue) {
+    <button
+      (click)="clearSearch()"
+      class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+      aria-label="Borrar búsqueda"
+    >
+      <lucide-angular name="x" class="w-5 h-5"></lucide-angular>
+    </button>
+  }
+</div>

@@ -1,0 +1,111 @@
+<section class="py-16 my-12 bg-base-200 rounded-2xl">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-10">
+      <lucide-angular
+        name="quote"
+        class="w-12 h-12 mx-auto mb-4 text-primary"
+      ></lucide-angular>
+      <h2 class="text-3xl font-bold tracking-tight">
+        Lo que dicen nuestros clientes
+      </h2>
+      <p class="mt-4 text-lg text-muted-foreground">
+        Miles de clientes satisfechos confían en nosotros para sus necesidades
+        tecnológicas
+      </p>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto">
+      <div
+        #testimonialCard
+        class="testimonial-card card overflow-hidden"
+        [class.sliding-next]="direction() === 'next' && animating()"
+        [class.sliding-prev]="direction() === 'prev' && animating()"
+      >
+        @if (testimonials.length > 0) {
+        <div class="card-body p-8 text-center">
+          <!-- Estrellas de valoración -->
+          <div class="flex justify-center mb-4">
+            @for (star of generateStars(testimonials[activeIndex()].rating);
+            track $index) {
+            <lucide-angular
+              name="star"
+              class="star-icon w-6 h-6 mx-0.5"
+              [style.--index]="$index"
+              [class.text-yellow-400]="star === 1"
+              [class.fill-yellow-400]="star === 1"
+              [class.text-gray-300]="star === 0"
+            ></lucide-angular>
+            }
+          </div>
+
+          <p class="mb-8 text-xl italic testimonial-content">
+            "{{ testimonials[activeIndex()].content }}"
+          </p>
+
+          <div class="flex flex-col items-center testimonial-author">
+            <div class="avatar mb-4">
+              <div
+                class="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2"
+              >
+                <img
+                  [src]="testimonials[activeIndex()].avatar"
+                  [alt]="testimonials[activeIndex()].name"
+                  onerror="this.style.display='none'"
+                />
+                <!-- Fallback para avatar -->
+                <div
+                  *ngIf="!testimonials[activeIndex()].avatar"
+                  class="w-full h-full bg-primary text-primary-content flex items-center justify-center text-xl font-bold"
+                >
+                  {{ getInitials(testimonials[activeIndex()].name) }}
+                </div>
+              </div>
+            </div>
+            <p class="text-lg font-medium">
+              {{ testimonials[activeIndex()].name }}
+            </p>
+            <p class="text-muted-foreground">
+              {{ testimonials[activeIndex()].role }}
+            </p>
+          </div>
+        </div>
+        }
+      </div>
+
+      <button
+        (click)="prevTestimonial()"
+        class="nav-button btn btn-circle btn-sm absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-base-100 shadow-md"
+        [disabled]="isAnimating()"
+        [class.opacity-50]="isAnimating()"
+      >
+        <lucide-angular name="chevron-left" class="w-5 h-5"></lucide-angular>
+      </button>
+
+      <button
+        (click)="nextTestimonial()"
+        class="nav-button btn btn-circle btn-sm absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-base-100 shadow-md"
+        [disabled]="isAnimating()"
+        [class.opacity-50]="isAnimating()"
+      >
+        <lucide-angular name="chevron-right" class="w-5 h-5"></lucide-angular>
+      </button>
+
+      <div class="flex justify-center mt-6 space-x-2">
+        @for (testimonial of testimonials; track testimonial.id; let i = $index)
+        {
+        <button
+          (click)="goToTestimonial(i)"
+          class="indicator-dot transition-all duration-300 rounded-full"
+          [class.bg-primary]="i === activeIndex()"
+          [class.bg-gray-300]="i !== activeIndex()"
+          [class.w-6]="i === activeIndex()"
+          [class.w-3]="i !== activeIndex()"
+          [class.h-3]="true"
+          [disabled]="isAnimating()"
+          [attr.aria-label]="'Ir al testimonio ' + (i + 1)"
+        ></button>
+        }
+      </div>
+    </div>
+  </div>
+</section>

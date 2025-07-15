@@ -1,0 +1,253 @@
+<div class="flex h-screen overflow-hidden bg-base-200">
+  <!-- Sidebar para escritorio -->
+  <aside
+    class="fixed inset-y-0 left-0 z-40 hidden md:flex flex-col border-r border-base-300 bg-base-100 shadow-md transition-all duration-300 sidebar-animation"
+    [class.w-64]="isSidebarOpen()"
+    [class.w-20]="!isSidebarOpen()"
+  >
+    <div class="flex items-center justify-between p-4 border-b border-base-300">
+      <a
+        [routerLink]="['/admin']"
+        class="flex items-center"
+        [class.justify-center]="!isSidebarOpen()"
+      >
+        @if (isSidebarOpen()) {
+        <span class="text-xl font-bold text-primary">Admin Panel</span>
+        } @else {
+        <lucide-angular
+          name="box"
+          class="w-6 h-6 text-primary"
+        ></lucide-angular>
+        }
+      </a>
+      <button
+        class="btn btn-ghost btn-sm btn-square hidden md:flex hover:bg-base-200"
+        (click)="toggleSidebar()"
+      >
+        <lucide-angular name="menu" class="w-5 h-5"></lucide-angular>
+      </button>
+    </div>
+    <div class="flex flex-col flex-1 overflow-y-auto">
+      <!-- Desktop sidebar navigation -->
+      <nav class="flex-1 p-4 space-y-1">
+        @for (route of routes; track route.href) {
+        <a
+          [routerLink]="[route.href]"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: route.href === '/admin' }"
+          class="flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all hover:translate-x-1 nav-link"
+          [ngClass]="{
+            'justify-center': !isSidebarOpen()
+          }"
+        >
+          <lucide-angular
+            name="{{route.icon}}"
+            class="w-5 h-5 shrink-0 transition-transform"
+          ></lucide-angular>
+
+          @if (isSidebarOpen()) {
+          <span class="ml-3 transition-opacity duration-200">{{
+            route.label
+          }}</span>
+          }
+        </a>
+        }
+      </nav>
+
+      <div class="p-4 mt-auto border-t border-base-300">
+        <div
+          class="flex items-center"
+          [class.justify-between]="isSidebarOpen()"
+          [class.justify-center]="!isSidebarOpen()"
+        >
+          @if (isSidebarOpen()) {
+          <div class="avatar mr-3">
+            <div
+              class="w-8 h-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2"
+            >
+              <!-- Avatar personalizado según el usuario -->
+              @if (userService.hasAvatar()) {
+              <img
+                [src]="userService.getUserAvatar()"
+                alt="Avatar de usuario"
+                (error)="userService.setAvatarLoadError()"
+                class="w-full h-full object-cover"
+              />
+              } @else {
+              <div
+                class="bg-primary text-primary-content rounded-full w-8 h-8 flex items-center justify-center"
+                [ngClass]="userService.getAvatarBackground()"
+              >
+                <span>{{ userService.userInitials() }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          <div>
+            <p class="text-sm font-medium">{{ userService.userName() }}</p>
+            <p class="text-xs text-base-content/60">{{ authService.user()?.email || ''}}</p>
+          </div>
+          <button
+            class="btn btn-ghost btn-circle btn-xs"
+            (click)="toggleTheme()"
+          >
+            <lucide-angular
+              name="{{ isDarkMode() ? 'sun' : 'moon' }}"
+              class="w-4 h-4"
+            ></lucide-angular>
+          </button>
+          } @else {
+          <div class="avatar">
+            <div
+              class="w-8 h-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 flex items-center justify-center"
+            >
+              <!-- Avatar personalizado según el usuario (para sidebar colapsada) -->
+              @if (userService.hasAvatar()) {
+              <img
+                [src]="userService.getUserAvatar()"
+                alt="Avatar de usuario"
+                (error)="userService.setAvatarLoadError()"
+                class="w-full h-full object-cover"
+              />
+              } @else {
+              <div
+                class="bg-primary text-primary-content rounded-full w-8 h-8 flex items-center justify-center"
+                [ngClass]="userService.getAvatarBackground()"
+              >
+                <span>{{ userService.userInitials() }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+
+        @if (isSidebarOpen()) {
+        <button
+          class="btn btn-ghost w-full mt-4 text-error hover:bg-error/10 transition-all hover:scale-105"
+          (click)="logout()"
+        >
+          <lucide-angular
+            name="log-out"
+            class="w-4 h-4 mr-2"
+          ></lucide-angular>
+          Cerrar sesión
+        </button>
+        }
+      </div>
+    </div>
+  </aside>
+  <div class="md:hidden">
+    <div
+      class="fixed inset-0 z-40 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+      [class.opacity-0]="!isSidebarOpen()"
+      [class.pointer-events-none]="!isSidebarOpen()"
+      [class.opacity-100]="isSidebarOpen()"
+      (click)="isSidebarOpen.set(false)"
+    ></div>
+
+    <button
+      class="fixed top-4 left-4 z-40 btn btn-ghost btn-circle md:hidden hover:bg-base-200"
+      (click)="isSidebarOpen.set(true)"
+      [class.hidden]="isSidebarOpen()"
+    >
+      <lucide-angular name="menu" class="w-6 h-6"></lucide-angular>
+    </button>
+
+    <aside
+      class="fixed inset-y-0 left-0 z-50 w-64 flex-col border-r border-base-300 bg-base-100 shadow-lg transition-all duration-300 transform mobile-sidebar-animation"
+      [class.translate-x-0]="isSidebarOpen()"
+      [class.-translate-x-full]="!isSidebarOpen()"
+    >
+      <div
+        class="flex items-center justify-between p-4 border-b border-base-300"
+      >
+        <a [routerLink]="['/admin']" class="flex items-center">
+          <span class="text-xl font-bold text-primary">Admin Panel</span>
+        </a>
+        <button
+          class="btn btn-ghost btn-sm btn-circle hover:bg-base-200"
+          (click)="isSidebarOpen.set(false)"
+        >
+          <lucide-angular name="x" class="w-5 h-5"></lucide-angular>
+        </button>
+      </div>
+
+      <div class="flex flex-col flex-1 overflow-y-auto">
+        <nav class="flex-1 p-4 space-y-1">
+          @for (route of routes; track route.href) {
+          <a
+            [routerLink]="[route.href]"
+            routerLinkActive="bg-primary bg-opacity-10 text-primary active-nav-link"
+            [routerLinkActiveOptions]="{ exact: route.href === '/admin' }"
+            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all hover:translate-x-1 nav-link"
+            (click)="closeSidebar($event)"
+          >
+            <lucide-angular
+              name="{{route.icon}}"
+              class="w-5 h-5 shrink-0 transition-transform"
+              [ngClass]="{ 'text-primary': isActiveRoute(route.href) }"
+            ></lucide-angular>
+            <span class="ml-3">{{ route.label }}</span>
+          </a>
+          }
+        </nav>
+
+        <div class="p-4 mt-auto border-t border-base-300">
+          <div class="flex items-center">
+            <div class="avatar mr-3">
+              <div
+                class="w-8 h-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2"
+              >
+                <!-- Avatar personalizado según el usuario para móvil -->
+                @if (userService.hasAvatar()) {
+                <img
+                  [src]="userService.getUserAvatar()"
+                  alt="Avatar de usuario"
+                  (error)="userService.setAvatarLoadError()"
+                  class="w-full h-full object-cover"
+                />
+                } @else {
+                <div
+                  class="bg-primary text-primary-content rounded-full w-8 h-8 flex items-center justify-center"
+                  [ngClass]="userService.getAvatarBackground()"
+                >
+                  <span>{{ userService.userInitials() }}</span>
+                </div>
+                }
+              </div>
+            </div>
+            <div>
+              <p class="text-sm font-medium">{{ userService.userName() }}</p>
+              <p class="text-xs text-base-content/60">{{ authService.user()?.email || '' }}</p>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-ghost w-full mt-4 text-error hover:bg-error/10 transition-all hover:scale-105"
+            (click)="logout()"
+          >
+            <lucide-angular
+              name="log-out"
+              class="w-4 h-4 mr-2"
+            ></lucide-angular>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <!-- Contenido principal -->
+  <div
+    class="flex-1 h-screen overflow-auto transition-all duration-300 flex flex-col"
+    [ngStyle]="{
+      'margin-left':
+        window.innerWidth >= 768 ? (isSidebarOpen() ? '16rem' : '5rem') : '0'
+    }"
+  >
+    <header-admin />
+    <div class="flex-1 overflow-auto">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

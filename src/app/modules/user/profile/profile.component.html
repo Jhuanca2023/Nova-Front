@@ -1,0 +1,39 @@
+<div class="container mx-auto py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Mi Perfil</h1>
+      <p class="text-base-content/70">Gestiona tu información personal</p>
+    </div>
+
+    @if (profileService.isLoading()) {
+      <div class="flex justify-center py-12">
+        <div class="loading loading-spinner loading-lg"></div>
+      </div>
+    } @else {
+      @if (profileService.updateSuccess()) {
+        <div class="alert alert-success mb-6 animate-fade-in">
+          <lucide-angular name="check-circle" class="w-5 h-5"></lucide-angular>
+          <span>¡Perfil actualizado correctamente!</span>
+        </div>
+      }
+
+      @if (profileService.updateError()) {
+        <div class="alert alert-error mb-6 animate-fade-in">
+          <lucide-angular name="alert-circle" class="w-5 h-5"></lucide-angular>
+          <span>{{ profileService.updateError() }}</span>
+        </div>
+      }
+
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+          <profile-header/>
+          <user-edit-profile/>
+        </div>
+      </div>
+
+      @if (!authService.isGoogleUser()) {
+        <profile-security/>
+      }
+    }
+  </div>
+</div>

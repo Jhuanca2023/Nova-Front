@@ -1,0 +1,91 @@
+<div class="container mx-auto px-4 py-8">
+  <a
+    routerLink="/products"
+    class="inline-flex items-center mb-6 text-primary hover:underline"
+  >
+    <lucide-angular name="arrow-left" class="w-4 h-4 mr-2"></lucide-angular>
+    Volver a productos
+  </a>
+
+  @if (productResource.isLoading()) {
+    <div class="flex justify-center items-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else if (productResource.error()) {
+    <div class="card bg-base-100 shadow text-center p-8">
+      <div class="flex flex-col items-center">
+        <h2 class="text-2xl font-bold mb-2">Error al cargar el producto</h2>
+        <p class="text-muted-foreground mb-6">
+          {{ productResource.error() }}
+        </p>
+        <a routerLink="/products" class="btn btn-primary">
+          Ver todos los productos
+        </a>
+      </div>
+    </div>
+  } @else if (!productResource.value()) {
+    <div class="card bg-base-100 shadow text-center p-8">
+      <div class="flex flex-col items-center">
+        <h2 class="text-2xl font-bold mb-2">Producto no encontrado</h2>
+        <p class="text-muted-foreground mb-6">
+          Lo sentimos, el producto que buscas no está disponible.
+        </p>
+        <a routerLink="/products" class="btn btn-primary">
+          Ver todos los productos
+        </a>
+      </div>
+    </div>
+  } @else {
+    <div class="grid gap-8 md:grid-cols-2">
+      @defer {
+        <product-gallery [product]="productResource.value()!"/>
+      } @loading {
+        <div class="skeleton h-64 w-full"></div>
+      }
+
+      @defer {
+        <product-info
+          [product]="productResource.value()!"
+          [relatedProducts]="relatedProducts()">
+        </product-info>
+      } @loading {
+        <div class="space-y-4">
+          <div class="skeleton h-8 w-3/4"></div>
+          <div class="skeleton h-4 w-1/2"></div>
+          <div class="skeleton h-20 w-full"></div>
+          <div class="skeleton h-12 w-full"></div>
+        </div>
+      } @error {
+        <div role="alert" class="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none"
+               viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Error al cargar los productos</span>
+        </div>
+      }
+    </div>
+    @defer {
+      <comments-section
+        [product]="productResource.value()!"
+        [currentPage]="commentsPage()"
+        (pageChange)="handleCommentPageChange($event)"
+        (commentAdded)="handleCommentAdded()">
+      </comments-section>
+    } @loading {
+      <div class="mt-12">
+        <div class="skeleton h-8 w-64 mb-4"></div>
+        <div class="skeleton h-32 w-full"></div>
+      </div>
+    } @error {
+      <div role="alert" class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>Error al cargar los comentarios</span>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,48 @@
+<section class="py-12 overflow-hidden">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl font-bold tracking-tight">Nuestras marcas destacadas</h2>
+      <p class="mt-4 text-muted-foreground">
+        Trabajamos con las mejores marcas para ofrecerte productos de calidad
+      </p>
+    </div>
+
+    <div
+      #brandsContainer
+      class="flex flex-wrap items-center justify-center gap-8 md:gap-12 py-8 px-4 wave-background"
+      [class.animate-brands]="isVisible()"
+      [class.dark-mode]="isDarkMode()"
+      [class.light-mode]="!isDarkMode()">
+      @for (brand of brands(); track brand.id; let i = $index) {
+        <div
+          class="brand-item transform transition-all duration-300 hover:scale-105 cursor-pointer"
+          [attr.data-brand-id]="brand.id"
+          [style.--animation-delay]="i * 0.1 + 's'">
+          <div
+            class="brand-card p-6 rounded-lg transition-all duration-300 flex flex-col items-center"
+            [style.border-top]="'3px solid ' + getBrandColor(brand)"
+            [attr.data-color]="getBrandColor(brand)">
+            <img
+              [src]="getLogo(brand)"
+              [alt]="brand.name"
+              class="brand-image h-12 md:h-16 w-auto max-w-[120px] object-contain transition-all duration-300"
+              [style.filter]="getImageFilter()"
+              [title]="brand.name"
+            />
+            <span
+              class="brand-name mt-3 text-sm font-medium transform translate-y-2 transition-all duration-300"
+              [style.color]="getBrandColor(brand)"
+            >
+              {{ brand.name }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="wave-container relative mt-12 overflow-hidden h-12 opacity-30">
+      <div class="wave wave1"></div>
+      <div class="wave wave2"></div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,141 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-2">Todos los productos</h1>
+    <p class="text-muted-foreground">Encuentra exactamente lo que necesitas</p>
+  </div>
+
+
+  <!-- Buscador y filtros -->
+  <div class="flex flex-col md:flex-row gap-4 mb-6">
+    <!-- Componente de búsqueda -->
+    <div class="flex-1">
+      <product-search
+        [query]="searchQuery()"
+        (queryChange)="handleSearchChange($event)"
+      ></product-search>
+    </div>
+
+    <div class="flex gap-2">
+      <!-- Ordenamiento -->
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-outline">
+          Ordenar por
+          <lucide-angular
+            name="chevron-down"
+            class="w-4 h-4 ml-1"
+          ></lucide-angular>
+        </div>
+        <ul
+          tabindex="0"
+          class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+        >
+          @for (option of sortOptions; track option) {
+          <li>
+            <a
+              (click)="onSortChange(option)"
+              [class.active]="option === currentSort()"
+            >
+              {{
+                option === "relevancia"
+                  ? "Relevancia"
+                  : option === "precio-asc"
+                  ? "Precio: Menor a Mayor"
+                  : option === "precio-desc"
+                  ? "Precio: Mayor a Menor"
+                  : "Mejor puntuados"
+              }}
+            </a>
+          </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Botón de filtro -->
+      <button class="btn btn-outline" (click)="toggleFilters()">
+        <lucide-angular
+          name="sliders-horizontal"
+          class="w-5 h-5 mr-2"
+        ></lucide-angular>
+        Filtros
+      </button>
+    </div>
+  </div>
+  <!-- <product-filter-bar
+    [searchQuery]="searchQuery()"
+    [currentSort]="currentSort()"
+    (search)="onSearch($event)"
+    (sort)="onSortChange($event)"
+    (toggleFilters)="toggleFilters()"
+  ></product-filter-bar> -->
+  <product-category-filter
+    [showFilters]="showFilters()"
+    [selectedCategory]="selectedCategory()"
+    (categoryChange)="onCategoryChange($event)"
+  ></product-category-filter>
+
+  <!-- Resto del código sin cambios -->
+  @if (loadProducts.isLoading()) {
+  <div class="flex justify-center items-center py-16">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+  } @else if (filteredProducts().length === 0) {
+  <div class="card bg-base-100 shadow text-center p-8">
+    <div class="flex flex-col items-center">
+      <lucide-angular
+        name="search"
+        class="w-16 h-16 text-muted-foreground mb-4"
+      ></lucide-angular>
+      <h2 class="text-2xl font-bold mb-2">No se encontraron productos</h2>
+      <p class="text-muted-foreground mb-6">
+        No hay productos que coincidan con tu búsqueda o filtros seleccionados.
+      </p>
+      <div class="space-x-2">
+        @if (searchQuery() || selectedCategory() !== null) {
+        <button
+          class="btn btn-primary"
+          (click)="onSearch(''); onCategoryChange(null)"
+        >
+          Borrar filtros
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="mb-4 text-sm text-muted-foreground">
+    Mostrando {{ (currentPage() - 1) * pageSize() + 1 }} -
+    {{ Math.min(currentPage() * pageSize(), totalItems()) }}
+    de {{ totalItems() }} productos @if (searchQuery()) { para la búsqueda "{{
+      searchQuery()
+    }}" } @if (selectedCategory() !== null) { en la categoría "{{
+      getCategoryName(selectedCategory()!)
+    }}" }
+  </div>
+
+  @defer {
+  <div
+    class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  >
+    @for (product of sortedProducts(); track trackProduct($index, product)) {
+    <div class="product-item">
+      <product-card [product]="product"></product-card>
+    </div>
+    }
+  </div>
+  } @loading {
+  <div
+    class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  >
+    @for (_ of [1,2,3,4,5,6,8]; track $index) {
+    <div class="skeleton h-80 w-full"></div>
+    }
+  </div>
+  }
+
+  <pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    (pageChange)="changePage($event)"
+  ></pagination>
+  }
+</div>

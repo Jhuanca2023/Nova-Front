@@ -1,0 +1,114 @@
+<div class="card-body">
+  <div class="card-title flex justify-between items-center">
+    <h2>Resumen de tu pedido</h2>
+    <a routerLink="/checkout/shipping" class="btn btn-circle btn-sm btn-ghost">
+      <lucide-angular name="arrow-left" class="w-4 h-4"></lucide-angular>
+    </a>
+  </div>
+  <p class="text-base-content/70 mb-6">
+    Revisa los detalles de tu pedido y procede al pago
+  </p>
+
+  @if (cartResource.isLoading()) {
+    <div class="flex justify-center items-center py-8">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else if (cartResource.error()) {
+    <div class="alert alert-error">
+      <lucide-angular name="alert-circle" class="w-6 h-6"></lucide-angular>
+      <span>Error al cargar el carrito: {{ cartResource.error() }}</span>
+      <button class="btn btn-sm" (click)="cartResource.reload()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="payment-summary space-y-6">
+      <!-- Información del cliente -->
+      <div class="bg-base-200 p-4 rounded-lg">
+        <h3 class="font-medium mb-3">Información del cliente</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-base-content/70">Email</p>
+            <p class="font-medium">{{ customerEmail() }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-base-content/70">Teléfono</p>
+            <p class="font-medium">{{ customerPhone() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos -->
+      <div>
+        <h3 class="font-medium mb-3">Productos ({{ cartResource.value()!.details.length }})</h3>
+        <div class="space-y-2">
+          @for (item of cartResource.value()?.details; track item.id) {
+            <div class="payment-item flex items-center p-4 bg-base-200 rounded-lg">
+              <div class="w-16 h-16 mr-4 bg-base-300 rounded overflow-hidden">
+                <img
+                  [src]="item.imageUrl || '/assets/images/placeholder.png'"
+                  [alt]="item.productName"
+                  class="w-full h-full object-cover"
+                >
+              </div>
+              <div class="flex-1">
+                <p class="font-medium">{{ item.productName }}</p>
+                <p class="text-sm opacity-70">
+                  Cantidad: {{ item.quantity }} x {{ item.unitPrice | currencyPEN }}
+                </p>
+              </div>
+              <div class="font-bold">
+                {{ item.subtotal | currencyPEN }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Resumen de costos -->
+      <div class="bg-base-200 p-4 rounded-lg">
+        <h3 class="font-medium mb-3">Resumen de costos</h3>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <span>Subtotal</span>
+            <span>{{ getSubtotal() | currencyPEN }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span>Envío</span>
+            <span>{{ shippingCost() | currencyPEN }}</span>
+          </div>
+          <div class="divider my-1"></div>
+          <div class="flex justify-between items-center text-lg font-bold">
+            <span>Total</span>
+            <span>{{ getTotal() | currencyPEN }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <lucide-angular name="info" class="w-5 h-5"></lucide-angular>
+        <span>
+          Al hacer clic en "Proceder al pago", serás redirigido a nuestra pasarela de pago seguro.
+        </span>
+      </div>
+    </div>
+  }
+</div>
+
+<div class="card-actions justify-between p-6 bg-base-200">
+  <a routerLink="/checkout/shipping" class="btn btn-outline">
+    <lucide-angular name="arrow-left" class="w-4 h-4 mr-2"></lucide-angular>
+    Volver
+  </a>
+  <button
+    class="btn btn-primary pay-btn"
+    [disabled]="isProcessing() || cartResource.isLoading() || cartResource.error()"
+    (click)="proceedToPayment()"
+  >
+    @if (isProcessing()) {
+      <span class="loading loading-spinner loading-xs mr-2"></span>
+      Procesando...
+    } @else {
+      Proceder al pago
+      <lucide-angular name="credit-card" class="w-4 h-4 ml-2"></lucide-angular>
+    }
+  </button>
+</div>
