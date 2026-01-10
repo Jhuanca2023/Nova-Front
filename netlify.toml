@@ -1,10 +1,6 @@
 [build]
-  # Comando para construir la aplicación Angular
-  # Usa --legacy-peer-deps para resolver conflictos de versiones de Angular
-  command = "npm install --legacy-peer-deps && npm run build"
-  
-  # Directorio donde se genera el build de producción
-  publish = "dist/neon-nova/browser"
+  command = "npm run build -- --configuration=production"
+  publish = "dist/neon-nova"
 
 # Configuración para Single Page Application (SPA)
 # Redirige todas las rutas al index.html para que Angular Router funcione
